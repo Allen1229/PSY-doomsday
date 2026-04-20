@@ -246,71 +246,103 @@ function showToast(msg) {
   const toast = document.getElementById('toast');
   toast.innerText = msg;
   toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2000);
+  setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
+// ── 偵測 LINE 內建瀏覽器 ──
+function isLineIAB() {
+  return /Line/i.test(navigator.userAgent);
+}
+
+// ── 偵測手機裝置 ──
+function isMobile() {
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+// ── 跨瀏覽器複製文字（含 LINE IAB fallback）──
+function copyTextFallback(str) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(str).catch(() => execCopyFallback(str));
+  }
+  return execCopyFallback(str);
+}
+function execCopyFallback(str) {
+  return new Promise((resolve) => {
+    const ta = document.createElement('textarea');
+    ta.value = str;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+    resolve();
+  });
+}
+
+// ── 跨瀏覽器開啟連結 ──
+function openUrl(url) {
+  window.open(url, '_blank');
+}
+
+// ── 分享功能（不可加 async！遵循 social-share SKILL）──
 function shareTo(platform) {
-  const url = encodeURIComponent(window.location.href);
-  const title = window.resultData ? `我在末世中是【${window.resultData.title}】！${window.resultData.subtitle}。你也來測測看！` : "末日生存挑戰";
-  const text = encodeURIComponent(title);
-  
-  if (platform === 'fb' || platform === 'ig') {
-    // FB 與 IG 都使用原生分享面板（帶結果圖片）
-    shareWithImage(title);
-  } else if (platform === 'line') {
-    window.location.href = `https://line.me/R/msg/text/?${text}%20${url}`;
-  } else if (platform === 'threads') {
-    window.location.href = `https://threads.net/intent/post?text=${text}%20${url}`;
-  } else if (platform === 'copy') {
-    const copyText = window.location.href;
-    navigator.clipboard.writeText(copyText).then(() => {
-      showToast('連結已複製！');
-    }).catch(() => {
-      fallbackCopy(copyText);
-      showToast('連結已複製！');
+  const url = window.location.href;
+  const title = window.resultData
+    ? `我在末世中是【${window.resultData.title}】！${window.resultData.subtitle}。你也來測測看！`
+    : '末日生存挑戰';
+  const fullText = encodeURIComponent(title + ' ' + url);
+
+  // ── 複製連結 ──
+  if (platform === 'copy') {
+    copyTextFallback(title + '\n' + url).then(() => {
+      showToast('✅ 已複製到剪貼簿！');
     });
+    return;
   }
-}
 
-async function shareWithImage(shareText) {
-  try {
-    // 取得結果圖片並轉為 File 物件
-    const imgPath = window.resultData ? window.resultData.img : 'images/t1_ruler.png';
-    const response = await fetch(imgPath);
-    const blob = await response.blob();
-    const file = new File([blob], 'my-result.png', { type: 'image/png' });
+  // ── IG：複製文字 + 提示 → 開 IG app ──
+  if (platform === 'ig') {
+    copyTextFallback(title + ' ' + url).then(() => {
+      showToast('📸 文字已複製！請到 IG 限動或貼文手動貼上');
+      setTimeout(() => {
+        if (isMobile()) { window.location.href = 'instagram://app'; }
+        else { openUrl('https://www.instagram.com/'); }
+      }, 600);
+    });
+    return;
+  }
 
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        title: '末日生存挑戰',
-        text: shareText,
-        url: window.location.href,
-        files: [file]
-      });
-    } else if (navigator.share) {
-      await navigator.share({
-        title: '末日生存挑戰',
-        text: shareText,
-        url: window.location.href
-      });
+  // ── LINE / Threads / FB ──
+  let shareUrl = '';
+  switch (platform) {
+    case 'line':
+      if (isMobile()) {
+        shareUrl = `line://msg/text/${encodeURIComponent(title + '\n' + url)}`;
+      } else if (isLineIAB()) {
+        shareUrl = `https://line.me/R/share?text=${fullText}`;
+      } else {
+        shareUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+      }
+      break;
+    case 'threads':
+      shareUrl = `https://www.threads.net/intent/post?text=${fullText}`;
+      break;
+    case 'fb':
+      if (isMobile()) {
+        window.location.href = `fb://share/?link=${encodeURIComponent(url)}&quote=${encodeURIComponent(title)}`;
+        setTimeout(() => {
+          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(title)}`, '_blank');
+        }, 1500);
+        return;
+      }
+      shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(title)}`;
+      break;
+  }
+  if (shareUrl) {
+    if (platform === 'line' && isMobile()) {
+      window.location.href = shareUrl;
     } else {
-      // PC fallback：複製文字
-      fallbackCopy(shareText + ' ' + window.location.href);
-      showToast('已複製測驗結果，可直接貼上分享！');
+      openUrl(shareUrl);
     }
-  } catch(e) {
-    // 用戶取消分享，不做任何事
   }
-}
-
-function fallbackCopy(text) {
-  const textArea = document.createElement("textarea");
-  textArea.value = text;
-  textArea.style.position = "fixed";
-  textArea.style.left = "-9999px";
-  textArea.setAttribute("readonly", "");
-  document.body.appendChild(textArea);
-  textArea.select();
-  document.execCommand("copy");
-  document.body.removeChild(textArea);
 }
