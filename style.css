@@ -24,7 +24,9 @@ body {
   background: var(--bg-color);
   color: var(--text-main);
   min-height: 100vh;
+  min-height: 100dvh;
   position: relative;
+  overflow-x: hidden;
 }
 
 /* PC 版防捲動：隱藏全域 scroll bar */
@@ -37,7 +39,7 @@ body {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
 }
-html, body {
+html {
   overflow-x: hidden;
 }
 
@@ -59,7 +61,6 @@ body::before {
   background: transparent;
   position: relative;
   z-index: 2;
-  overflow-x: hidden;
 }
 
 .glow-top {
@@ -81,8 +82,7 @@ body::before {
 
 .page {
   display: none;
-  padding: 3rem 1.5rem;
-  min-height: 100vh;
+  padding: 3rem 1.5rem 2rem;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
@@ -95,6 +95,13 @@ body::before {
   display: flex;
   opacity: 1;
   transform: translateY(0);
+}
+
+/* 首頁與載入頁需要滿版置中 */
+#home-page, #loading-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  justify-content: center;
 }
 
 .hero-icon {
