@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>💀 末日生存挑戰 💀</title>
+  <meta property="og:title" content="末日生存挑戰：你會成為哪種倖存者？">
+  <meta property="og:description" content="當世界陷入危機，人性面臨極大考驗！快來測出你在末日中的生存指數。">
+  <!-- 引入思源黑體 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="main-container">
+    <div class="glow-top"></div>
+    <div class="glow-bottom"></div>
+
+    <!-- 首頁 -->
+    <div id="home-page" class="page active">
+      <div class="hero-icon">
+        <!-- 驚悚風格骷髏 SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-skull-hero">
+          <circle cx="9" cy="12" r="1.5"></circle>
+          <circle cx="15" cy="12" r="1.5"></circle>
+          <path d="M8 20v2h8v-2"></path>
+          <path d="m12.5 17-.5-1-.5 1h1z"></path>
+          <path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"></path>
+        </svg>
+      </div>
+      <h1 class="home-title">末日生存挑戰</h1>
+      <p class="home-desc">當世界崩壞，秩序蕩然無存<br>你會是那個活到最後的人，<br>還是開局秒送的炮灰？</p>
+      <div class="home-highlight">測出你的末日真實生存機率</div>
+      <button class="btn-start" onclick="startQuiz()">接受生存考驗</button>
+    </div>
+
+    <!-- 測驗頁 -->
+    <div id="quiz-page" class="page">
+      <div class="progress-bar">
+        <div class="progress-bar-fill" id="progress"></div>
+      </div>
+      <div class="question-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <span class="question-number">Question <span id="q-num">1</span>/8</span>
+        <button id="btn-back" onclick="goBack()" style="background: transparent; color: var(--text-muted); border: 1px solid var(--text-muted); padding: 0.25rem 0.6rem; font-size: 0.85rem; cursor: pointer; font-weight: bold; display: none;">← 回上一題</button>
+      </div>
+      <h2 class="question-text" id="q-text">題目載入中...</h2>
+      <div class="options-container" id="options-box">
+        <!-- 選項由 JS 動態產生 -->
+      </div>
+    </div>
+
+    <!-- 載入中 -->
+    <div id="loading-page" class="page">
+      <div class="spinner"></div>
+      <h2 class="loading-title">系統偵測中</h2>
+      <p class="loading-sub">正在評估您的生存機率...</p>
+    </div>
+
+    <!-- 結果頁 -->
+    <div id="result-page" class="page">
+      <div class="result-card" id="result-card">
+        <h3 class="result-label">生存鑑定報告</h3>
+        <h2 class="result-title" id="r-title">稱號</h2>
+        <div class="result-subtitle" id="r-subtitle">生存指數 X%</div>
+        <img class="result-image" id="r-image" src="" alt="鑑定結果">
+        <div class="result-tags" id="r-tags"></div>
+        <p class="result-desc" id="r-desc">描述文字...</p>
+      </div>
+
+      <div class="share-section">
+        <h4 class="share-label">警告其他倖存者</h4>
+        <div class="share-buttons">
+          <button class="share-btn fb" onclick="shareTo('fb')">FB</button>
+          <button class="share-btn line" onclick="shareTo('line')">LINE</button>
+          <button class="share-btn threads" onclick="shareTo('threads')">脆</button>
+          <button class="share-btn ig" onclick="shareTo('ig')">IG</button>
+          <button class="share-btn copy" onclick="shareTo('copy')">複製</button>
+        </div>
+      </div>
+
+      <!-- 橫幅廣告 -->
+      <div class="ad-banner">
+        <a href="https://www.gametower.com.tw/Action/partygo/mixytalk0416/index.html?utm_source=doomsday_survival&utm_medium=display&utm_campaign=mega_traffic_2026&utm_content=1st_banner" target="_blank" style="text-decoration:none;">
+          <img src="https://ad.gametower.com.tw/Action/partygo/mixytalk0416/banner.png" alt="玩星派對廣告">
+          <p class="ad-text" style="color: #fff; margin-top: 8px; font-weight: bold; font-size: 0.9rem;">玩星派對 - 完成電話認證抽好禮！</p>
+        </a>
+      </div>
+
+      <button class="btn-start restart-btn" onclick="location.reload()" style="margin-top: 1.5rem;">重新挑戰系統</button>
+    </div>
+  </div>
+
+  <!-- 蓋版廣告 -->
+  <div id="ad-interstitial" class="interstitial-overlay">
+    <div class="interstitial-box">
+      <a href="https://www.gametower.com.tw/Action/partygo/mixytalk0416/index.html?utm_source=doomsday_survival&utm_medium=display&utm_campaign=mega_traffic_2026&utm_content=1st_banner" target="_blank" style="text-decoration:none;">
+        <img src="https://ad.gametower.com.tw/Action/partygo/mixytalk0416/banner.png" alt="玩星派對廣告">
+        <p class="ad-text" style="color: #fff; margin-top: 8px; margin-bottom: 8px; font-weight: bold; font-size: 0.9rem; text-align: center;">玩星派對 - 完成電話認證抽好禮！</p>
+      </a>
+      <button class="interstitial-close" id="ad-close-btn" disabled>廣告 5s</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">已複製</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
