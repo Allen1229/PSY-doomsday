@@ -254,11 +254,11 @@ function shareTo(platform) {
   const text = encodeURIComponent(title);
   
   if (platform === 'fb') {
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+    window.location.href = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
   } else if (platform === 'line') {
-    window.open(`https://social-plugins.line.me/lineit/share?url=${url}&text=${text}`, '_blank');
+    window.location.href = `https://line.me/R/msg/text/?${text}%20${url}`;
   } else if (platform === 'threads') {
-    window.open(`https://threads.net/intent/post?text=${text}%20${url}`, '_blank');
+    window.location.href = `https://threads.net/intent/post?text=${text}%20${url}`;
   } else if (platform === 'ig') {
     const copyText = `${title} ${window.location.href}`;
     navigator.clipboard.writeText(copyText).then(() => {
@@ -266,6 +266,9 @@ function shareTo(platform) {
     }).catch(() => {
       const textArea = document.createElement("textarea");
       textArea.value = copyText;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      textArea.setAttribute("readonly", "");
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand("copy");
@@ -279,6 +282,9 @@ function shareTo(platform) {
     }).catch(() => {
       const textArea = document.createElement("textarea");
       textArea.value = copyText;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      textArea.setAttribute("readonly", "");
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand("copy");

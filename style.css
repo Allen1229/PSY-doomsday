@@ -24,9 +24,6 @@ body {
   background: var(--bg-color);
   color: var(--text-main);
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  overflow-x: hidden;
   position: relative;
 }
 
@@ -58,6 +55,7 @@ body::before {
 .main-container {
   width: 100%;
   max-width: 520px;
+  margin: 0 auto;
   background: transparent;
   position: relative;
   z-index: 2;
@@ -83,10 +81,10 @@ body::before {
 
 .page {
   display: none;
-  padding: 2rem 1.5rem;
+  padding: 3rem 1.5rem;
   min-height: 100vh;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   opacity: 0;
   transform: translateY(20px);
@@ -364,12 +362,13 @@ body::before {
 }
 
 .toast {
-  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
   background: var(--primary); color: #fff; padding: 0.75rem 1.5rem;
   font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-  transition: transform 0.3s ease; z-index: 200; border: 2px solid #fff;
+  transition: opacity 0.3s ease, transform 0.3s ease; z-index: 1000; border: 2px solid #fff;
+  opacity: 0; pointer-events: none; width: 90%; max-width: 400px; text-align: center; border-radius: 8px;
 }
-.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.show { opacity: 1; pointer-events: auto; }
 
 /* 各層級不同顏色的酷炫邊框 */
 .gradient-t1 { border-color: #fee2e2; box-shadow: 8px 8px 0 #b91c1c; }
