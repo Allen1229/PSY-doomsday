@@ -254,52 +254,63 @@ function shareTo(platform) {
   const title = window.resultData ? `我在末世中是【${window.resultData.title}】！${window.resultData.subtitle}。你也來測測看！` : "末日生存挑戰";
   const text = encodeURIComponent(title);
   
-  if (platform === 'fb') {
-    // 使用原生分享面板（支援 Messenger / IG / LINE 等多平台）
-    if (navigator.share) {
-      navigator.share({
-        title: '末日生存挑戰',
-        text: decodeURIComponent(text),
-        url: window.location.href
-      }).catch(() => {});
-    } else {
-      window.location.href = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
-    }
+  if (platform === 'fb' || platform === 'ig') {
+    // FB 與 IG 都使用原生分享面板（帶結果圖片）
+    shareWithImage(title);
   } else if (platform === 'line') {
     window.location.href = `https://line.me/R/msg/text/?${text}%20${url}`;
   } else if (platform === 'threads') {
     window.location.href = `https://threads.net/intent/post?text=${text}%20${url}`;
-  } else if (platform === 'ig') {
-    const copyText = `${title} ${window.location.href}`;
-    navigator.clipboard.writeText(copyText).then(() => {
-      showToast('已複製測驗連結與結果，可直接貼上 Instagram 分享！');
-    }).catch(() => {
-      const textArea = document.createElement("textarea");
-      textArea.value = copyText;
-      textArea.style.position = "fixed";
-      textArea.style.left = "-9999px";
-      textArea.setAttribute("readonly", "");
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-      showToast('已複製測驗連結與結果，可直接貼上 Instagram 分享！');
-    });
   } else if (platform === 'copy') {
     const copyText = window.location.href;
     navigator.clipboard.writeText(copyText).then(() => {
       showToast('連結已複製！');
     }).catch(() => {
-      const textArea = document.createElement("textarea");
-      textArea.value = copyText;
-      textArea.style.position = "fixed";
-      textArea.style.left = "-9999px";
-      textArea.setAttribute("readonly", "");
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
+      fallbackCopy(copyText);
       showToast('連結已複製！');
     });
   }
+}
+
+async function shareWithImage(shareText) {
+  try {
+    // 取得結果圖片並轉為 File 物件
+    const imgPath = window.resultData ? window.resultData.img : 'images/t1_ruler.png';
+    const response = await fetch(imgPath);
+    const blob = await response.blob();
+    const file = new File([blob], 'my-result.png', { type: 'image/png' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        title: '末日生存挑戰',
+        text: shareText,
+        url: window.location.href,
+        files: [file]
+      });
+    } else if (navigator.share) {
+      await navigator.share({
+        title: '末日生存挑戰',
+        text: shareText,
+        url: window.location.href
+      });
+    } else {
+      // PC fallback：複製文字
+      fallbackCopy(shareText + ' ' + window.location.href);
+      showToast('已複製測驗結果，可直接貼上分享！');
+    }
+  } catch(e) {
+    // 用戶取消分享，不做任何事
+  }
+}
+
+function fallbackCopy(text) {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.position = "fixed";
+  textArea.style.left = "-9999px";
+  textArea.setAttribute("readonly", "");
+  document.body.appendChild(textArea);
+  textArea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textArea);
 }
