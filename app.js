@@ -79,6 +79,7 @@ let scoreHistory = [];
 
 function showPage(pageId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  window.scrollTo(0, 0);
   setTimeout(() => {
     document.getElementById(pageId).classList.add('active');
   }, 50);
@@ -254,7 +255,16 @@ function shareTo(platform) {
   const text = encodeURIComponent(title);
   
   if (platform === 'fb') {
-    window.location.href = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+    // 使用原生分享面板（支援 Messenger / IG / LINE 等多平台）
+    if (navigator.share) {
+      navigator.share({
+        title: '末日生存挑戰',
+        text: decodeURIComponent(text),
+        url: window.location.href
+      }).catch(() => {});
+    } else {
+      window.location.href = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+    }
   } else if (platform === 'line') {
     window.location.href = `https://line.me/R/msg/text/?${text}%20${url}`;
   } else if (platform === 'threads') {
